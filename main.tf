@@ -10,7 +10,7 @@ resource "aws_instance" "instances" {
   ami           = var.ami
   instance_type = "t3.small"
   vpc_security_group_ids = var.vpc_security_group_ids
-  iam_instance_profile = "arn:aws:iam::444206648334:instance-profile/workstation-role"
+  iam_instance_profile = "workstation-role"
 
   tags = {
 	Name = "github-actions-runner"
@@ -31,7 +31,7 @@ resource "null_resource" "ansible" {
 	inline = [
 	  "sudo dnf install python3.13-pip -y",
 	  "sudo pip3.11 install ansible",
-	  "ansible-pull -i localhost, -U https://github.com/chanu-devops/github-actions-runners-configuration.git runner.yml -e TOKEN=${var.TOKEN}"
+	  "ansible-pull -i localhost, -U https://github.com/chanu-devops/github-action-runners-configuration.git runner.yml -e TOKEN=${var.TOKEN}"
 	]
 
   }
