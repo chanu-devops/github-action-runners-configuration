@@ -46,11 +46,8 @@
         append: true
 
     # Pull ONCE (no loop)
-    - name: Pull runner image once
-      community.docker.docker_image:
-        name: chanu66/github-runner
-        tag: latest
-        source: pull
+    - name: Pull runner image (docker CLI)
+      ansible.builtin.command: docker pull chanu66/github-runner:latest
 
     # Run 3 containers (no pulling here)
     - name: Start runner containers
