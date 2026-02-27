@@ -2,67 +2,63 @@
 - name: Ansible Script for running multiple runners
   hosts: all
   become: true
+
+  vars:
+    runners:
+      - runner1
+      - runner2
+      - runner3
+
   tasks:
     - name: Install python requests
       ansible.builtin.shell: pip3.13 install requests
-
-    - name: Runner container
-      community.docker.docker_container:
-        name: "{{ item }}"
-        image: chanu66/github-runner:latest
-        state: started
-        recreate: true
-        pull: always
-        restart_policy: always
-        volumes:
-          - /var/run/docker.sock:/var/run/docker.sock
-        env:
-          NAME: "{{ item }}"
-          TOKEN: "{{ TOKEN }}"
-          ORG: "https://github.com/chanu-devops"
-      loop:
-        - runner1
-        - runner2
-        - runner3
-      register: out
-      ignore_errors: yes
-
-    - name: Run from Scratch
-      when: out.failed is defined
-      block:
-        - name: Set Prompt
-          ansible.builtin.shell: set-prompt -skip-apply github-runner
+      args:
+        creates: /usr/local/lib/python3.13/site-packages/requests
 
     - name: Download Docker repo
       ansible.builtin.get_url:
-         url: https://download.docker.com/linux/rhel/docker-ce.repo
-         dest: /etc/yum.repos.d/docker.repo
+        url: https://download.docker.com/linux/rhel/docker-ce.repo
+        dest: /etc/yum.repos.d/docker.repo
+        mode: "0644"
 
     - name: Install Docker
       ansible.builtin.dnf:
         name: docker-ce
-        state: installed
+        state: present
 
     - name: Start Docker
       ansible.builtin.systemd_service:
         name: docker
-        state: restarted
-        enabled: yes
-        daemon-reload: yes
+        state: started
+        enabled: true
+        daemon-reload: true
+
+    - name: Wait for docker socket
+      ansible.builtin.wait_for:
+        path: /var/run/docker.sock
+        timeout: 60
 
     - name: Add github runner user
       ansible.builtin.user:
         name: github-runner
         home: /github-runner
         groups: docker
+        append: true
 
-    - name: Runner container
+    # Pull ONCE (no loop)
+    - name: Pull runner image once
+      community.docker.docker_image:
+        name: chanu66/github-runner
+        tag: latest
+        source: pull
+
+    # Run 3 containers (no pulling here)
+    - name: Start runner containers
       community.docker.docker_container:
         name: "{{ item }}"
         image: chanu66/github-runner:latest
         state: started
         recreate: true
-        pull: always
         restart_policy: always
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
@@ -70,7 +66,4 @@
           NAME: "{{ item }}"
           TOKEN: "{{ TOKEN }}"
           ORG: "https://github.com/chanu-devops"
-      loop:
-        - runner1
-        - runner2
-        - runner3
+      loop: "{{ runners }}"
