@@ -58,7 +58,7 @@
         name: "{{ item }}"
         image: chanu66/github-runner:latest
         state: started
-        recreate: true
+        recreate: false
         restart_policy: always
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock
