@@ -13,7 +13,7 @@
     - name: Runner container
       community.docker.docker_container:
         name: "{{ item }}"
-        image: chanu66/github-runner:d87
+        image: chanu66/github-runner:latest
         state: started
         recreate: true
         pull: always
@@ -65,7 +65,7 @@
         - name: Runner container
           community.docker.docker_container:
             name: "{{ item }}"
-            image: chanu66/github-runner:d87
+            image: chanu66/github-runner:latest
             state: started
             recreate: true
             pull: always
