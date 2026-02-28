@@ -11,6 +11,10 @@ resource "aws_instance" "instances" {
   instance_type = "t3.small"
   vpc_security_group_ids = var.vpc_security_group_ids
   iam_instance_profile = "workstation-role"
+  root_block_device {
+	volume_size = 40
+	volume_type = "gp3"
+  }
 
   tags = {
 	Name = "github-actions-runner"

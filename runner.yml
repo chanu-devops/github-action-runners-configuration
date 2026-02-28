@@ -10,6 +10,9 @@
     - name: Install python requests
       ansible.builtin.shell: pip3.13 install requests
 
+    - name: Increase Disk Size
+      ansible.builtin.shell: growpart /dev/nvme0n1 4 ; lvextend -r -L +15G /dev/mapper/RootVG-varVol
+
     - name: Runner container
       community.docker.docker_container:
         name: "{{ item }}"
